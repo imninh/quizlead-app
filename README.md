@@ -10,7 +10,7 @@
 | Bảng thi | Bảng A - Công nghệ |
 | Đề bài bốc thăm | Đề số 03 — Minigame quiz thu lead cho fanpage |
 | Demo online | https://quizlead-app.vercel.app |
-| Video demo (≤ 02 phút) | `<URL>` |
+| Video demo (≤ 02 phút) | https://youtu.be/VDxPc1A2Bik |
 | Source code | https://github.com/imninh/quizlead-app |
 | Minh chứng dùng AI | [docs/minh-chung-ai.pdf](docs/minh-chung-ai.pdf) (1 trang + 5 ảnh) |
 | Bảng kiểm thử | Tóm tắt ở mục 11; bảng đầy đủ 33 ca: [docs/bang-kiem-thu.pdf](docs/bang-kiem-thu.pdf) |

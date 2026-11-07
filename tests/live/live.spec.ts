@@ -116,6 +116,7 @@ test('live AI generate quiz works once', async ({ request }, testInfo) => {
   const body = await response.json()
   expect(body.ok).toBe(true)
   expect(body.questions).toHaveLength(5)
+  console.log(`live AI model: ${body.model}`)
 })
 
 test('live AI blocks an injection topic', async ({ request }, testInfo) => {
