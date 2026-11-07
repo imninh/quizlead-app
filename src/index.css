@@ -348,3 +348,9 @@ table {
   }
 }
 
+
+/* Ẩn nút mắt có sẵn của Edge: nó biến mất sau khi rời ô; dùng nút ẩn/hiện riêng. */
+.passcode-input::-ms-reveal,
+.passcode-input::-ms-clear {
+  display: none;
+}

@@ -1,7 +1,7 @@
 export const MSG = {
   nameLength: 'Tên phải từ 2 đến 50 ký tự',
   nameChars: 'Tên chỉ được chứa chữ cái và khoảng trắng',
-  phoneInvalid: 'Số điện thoại không hợp lệ',
+  phoneInvalid: 'Số điện thoại không hợp lệ: cần 10 số, bắt đầu bằng 03, 05, 07, 08 hoặc 09',
   questionLength: 'Câu hỏi phải từ 5 đến 300 ký tự',
   optionEmpty: 'Đáp án không được để trống',
   optionLength: 'Đáp án phải từ 1 đến 150 ký tự',

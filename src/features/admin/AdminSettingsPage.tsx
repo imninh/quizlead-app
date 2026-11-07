@@ -9,6 +9,7 @@ import { TextField } from '../../components/TextField'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { DEFAULT_SETTINGS } from '../../domain/seed'
 import { checkAdminPasscode } from '../../services/onlineClient'
+import { Eye, EyeOff } from 'lucide-react'
 import type { BackupInfo, StorageUsage } from '../../services/storage'
 
 function formatBytes(bytes: number): string {
@@ -28,6 +29,7 @@ export default function AdminSettingsPage() {
   const online = useOnlineService()
   const [passcode, setPasscode] = useState(() => repo.getAdminPasscode() ?? '')
   const [passcodeMessage, setPasscodeMessage] = useState<string | null>(null)
+  const [showPasscode, setShowPasscode] = useState(false)
   const [fanpageName, setFanpageName] = useState('')
   const [giftDescription, setGiftDescription] = useState('')
   const [fanpageUrl, setFanpageUrl] = useState('')
@@ -151,8 +153,8 @@ export default function AdminSettingsPage() {
       setPasscodeMessage('Nhập passcode trước.')
       return
     }
-    const ok = await checkAdminPasscode(passcode.trim())
-    setPasscodeMessage(ok ? 'Passcode đúng.' : 'Passcode không đúng.')
+    const result = await checkAdminPasscode(passcode.trim())
+    setPasscodeMessage(result.message)
   }
 
   return (
@@ -176,14 +178,25 @@ export default function AdminSettingsPage() {
         {online === false ? <p className="text-sm font-semibold text-alert">Máy chủ chưa bật xếp hạng online.</p> : null}
         <div>
           <label htmlFor="admin-passcode" className="block text-sm font-semibold">Passcode quản trị (cho tính năng online)</label>
-          <input
-            id="admin-passcode"
-            type="password"
-            className="w-full rounded-xl border-2 border-ink bg-white px-3 py-2 focus-visible:outline-4 focus-visible:outline-cobalt"
-            value={passcode}
-            onChange={(event) => setPasscode(event.target.value)}
-            autoComplete="current-password"
-          />
+          <div className="relative">
+            <input
+              id="admin-passcode"
+              type={showPasscode ? 'text' : 'password'}
+              className="passcode-input w-full rounded-xl border-2 border-ink bg-white py-2 pl-3 pr-12 focus-visible:outline-4 focus-visible:outline-cobalt"
+              value={passcode}
+              onChange={(event) => setPasscode(event.target.value)}
+              autoComplete="current-password"
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 grid w-11 place-items-center rounded-r-xl focus-visible:outline-4 focus-visible:outline-cobalt"
+              aria-label={showPasscode ? 'Ẩn passcode' : 'Hiện passcode'}
+              aria-pressed={showPasscode}
+              onClick={() => setShowPasscode((value) => !value)}
+            >
+              {showPasscode ? <EyeOff className="size-5" aria-hidden="true" /> : <Eye className="size-5" aria-hidden="true" />}
+            </button>
+          </div>
         </div>
         {passcodeMessage ? <p className="text-sm font-medium">{passcodeMessage}</p> : null}
         <div className="flex gap-3">

@@ -109,7 +109,10 @@ export async function publishQuiz(quiz: Quiz, passcode: string) {
   return PublishSchema.parse(data)
 }
 
-export async function checkAdminPasscode(passcode: string): Promise<boolean> {
+export type PasscodeCheck = { status: 'ok' | 'wrong' | 'locked' | 'error'; message: string }
+
+/** Phân biệt "sai passcode" với "máy chủ lỗi" để quản trị viên không hiểu nhầm. */
+export async function checkAdminPasscode(passcode: string): Promise<PasscodeCheck> {
   try {
     const data = await requestJson('/api/admin/check', {
       method: 'POST',
@@ -117,8 +120,13 @@ export async function checkAdminPasscode(passcode: string): Promise<boolean> {
       body: '{}',
     })
     return OkSchema.safeParse(data).success
-  } catch {
-    return false
+      ? { status: 'ok', message: 'Passcode đúng.' }
+      : { status: 'error', message: 'Máy chủ trả về dữ liệu lạ. Thử lại sau.' }
+  } catch (error) {
+    const code = error instanceof OnlineError ? error.code : 'NETWORK'
+    if (code === 'UNAUTHORIZED') return { status: 'wrong', message: 'Passcode không đúng.' }
+    if (code === 'PASSCODE_LOCKED') return { status: 'locked', message: 'Sai passcode quá nhiều lần. Thử lại sau 15 phút.' }
+    return { status: 'error', message: 'Chưa kiểm tra được: máy chủ online đang lỗi. Passcode vẫn được giữ nguyên.' }
   }
 }
 

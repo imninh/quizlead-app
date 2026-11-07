@@ -101,4 +101,30 @@ describe('leaderboard ui', () => {
     const rows = screen.getAllByRole('row').map((row) => row.textContent ?? '')
     expect(rows[1]).toContain('Tên Của Tôi')
   })
+
+  it('unpublished quiz hides the online tab and keeps play on this device', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url
+      if (url === '/api/health') return json({ online: true })
+      if (url.startsWith('/api/leaderboard/')) return json({ ok: false, code: 'NOT_FOUND', message: 'Quiz chưa được xuất bản.' }, 404)
+      return json({ ok: false }, 404)
+    }))
+
+    render(
+      <MemoryRouter initialEntries={[`/leaderboard/${SEED_QUIZ.id}`]}>
+        <RepoProvider>
+          <ToastProvider>
+            <Routes>
+              <Route path="/leaderboard/:quizId" element={<LeaderboardPage />} />
+            </Routes>
+          </ToastProvider>
+        </RepoProvider>
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText(/chưa xuất bản lên bảng chung/)).toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: /online/ })).not.toBeInTheDocument()
+    const playLink = screen.getByRole('link', { name: /Chơi lại/ })
+    expect(playLink).toHaveAttribute('href', `/play/${SEED_QUIZ.id}`)
+  })
 })

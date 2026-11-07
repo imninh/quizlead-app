@@ -50,7 +50,7 @@ describe('result form', () => {
     )
     await user.click(screen.getByText('Gửi thông tin'))
     expect(screen.getByText('Tên phải từ 2 đến 50 ký tự')).toBeInTheDocument()
-    expect(screen.getByText('Số điện thoại không hợp lệ')).toBeInTheDocument()
+    expect(screen.getByText(/Số điện thoại không hợp lệ/)).toBeInTheDocument()
   })
 
   it('rejects invalid phone prefix', async () => {
@@ -70,7 +70,7 @@ describe('result form', () => {
     await user.type(screen.getByLabelText(/Số điện thoại/i), '0212345678')
     await user.click(screen.getByRole('checkbox'))
     await user.click(screen.getByText('Gửi thông tin'))
-    expect(screen.getByText('Số điện thoại không hợp lệ')).toBeInTheDocument()
+    expect(screen.getByText(/Số điện thoại không hợp lệ/)).toBeInTheDocument()
   })
 
   it('does not submit when consent unchecked', async () => {

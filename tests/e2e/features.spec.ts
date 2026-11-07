@@ -148,7 +148,7 @@ test('F3 result screen and lead form saved to localStorage', async ({ page }) =>
   await expect(page.getByText('4.250', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Gửi thông tin' }).click()
   await expect(page.getByText('Tên phải từ 2 đến 50 ký tự')).toBeVisible()
-  await expect(page.getByText('Số điện thoại không hợp lệ')).toBeVisible()
+  await expect(page.getByText(/Số điện thoại không hợp lệ/)).toBeVisible()
   await expect(page.getByText('Bạn cần đồng ý để nhận quà')).toBeVisible()
 
   await page.getByLabel(/Họ và tên/i).fill('Nguyễn Văn Test')

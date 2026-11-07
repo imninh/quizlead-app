@@ -12,7 +12,7 @@ import { Doodle } from '../../components/Doodle'
 import { EmptyState } from '../../components/EmptyState'
 import { BrushStroke } from '../../components/BrushStroke'
 import { MSG } from '../../domain/messages'
-import { fetchOnlineLeaderboard, fetchPublishedQuiz, loadOnlineEntry, loadOnlineEntryId, mergeOnlineEntries, type OnlineEntry } from '../../services/onlineClient'
+import { OnlineError, fetchOnlineLeaderboard, fetchPublishedQuiz, loadOnlineEntry, loadOnlineEntryId, mergeOnlineEntries, type OnlineEntry } from '../../services/onlineClient'
 import type { Lead, Quiz } from '../../domain/schemas'
 
 type Tab = 'online' | 'local'
@@ -76,7 +76,8 @@ export default function LeaderboardPage() {
   const online = useOnlineService()
   const [tab, setTab] = useState<Tab | null>(null)
   const [onlineEntries, setOnlineEntries] = useState<OnlineEntry[]>([])
-  const [onlineError, setOnlineError] = useState(false)
+  // 'unpublished': quiz chưa xuất bản nên không có bảng chung; 'error': máy chủ lỗi tạm thời.
+  const [onlineIssue, setOnlineIssue] = useState<'unpublished' | 'error' | null>(null)
   const [remoteQuiz, setRemoteQuiz] = useState<Quiz | null>(null)
 
   const quizResult = quizId ? repo.getQuiz(quizId) : null
@@ -113,11 +114,11 @@ export default function LeaderboardPage() {
       .then((result) => {
         if (!active) return
         setOnlineEntries(result.entries)
-        setOnlineError(false)
+        setOnlineIssue(null)
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (!active) return
-        setOnlineError(true)
+        setOnlineIssue(error instanceof OnlineError && error.code === 'NOT_FOUND' ? 'unpublished' : 'error')
         setTab('local')
       })
     return () => {
@@ -137,10 +138,12 @@ export default function LeaderboardPage() {
     )
   }
 
-  const activeTab: Tab = tab ?? (online === true ? 'online' : 'local')
+  const hasOnlineBoard = online === true && onlineIssue !== 'unpublished'
+  const activeTab: Tab = hasOnlineBoard ? (tab ?? 'online') : 'local'
   const localRanked = ranked
   const showEmpty = activeTab === 'online' ? onlineRanked.length === 0 : localRanked.length === 0
-  const playHref = online === true && activeTab === 'online' ? `/q/${quizId}` : `/play/${quizId}`
+  // Chỉ dẫn sang link online khi bảng chung tải được; còn lại chơi bằng quiz trên máy.
+  const playHref = hasOnlineBoard && onlineIssue === null && activeTab === 'online' ? `/q/${quizId}` : `/play/${quizId}`
 
   return (
     <div className="relative mx-auto max-w-5xl">
@@ -153,7 +156,7 @@ export default function LeaderboardPage() {
         <p className="text-lg font-semibold">{displayQuiz.title}</p>
       </div>
 
-      {online === true ? (
+      {hasOnlineBoard ? (
         <div className="mb-3 flex flex-wrap gap-2" role="tablist" aria-label="Nguồn bảng xếp hạng">
           <button
             role="tab"
@@ -174,7 +177,10 @@ export default function LeaderboardPage() {
         </div>
       ) : null}
 
-      {onlineError ? <p className="mb-2 text-sm text-ink/70">Không tải được bảng chung. Đang hiển thị trên máy này.</p> : null}
+      {onlineIssue === 'unpublished' ? (
+        <p className="mb-2 text-sm text-ink/70">Quiz này chưa xuất bản lên bảng chung. Đang hiển thị bảng trên máy này.</p>
+      ) : null}
+      {onlineIssue === 'error' ? <p className="mb-2 text-sm text-ink/70">Không tải được bảng chung. Đang hiển thị trên máy này.</p> : null}
 
       {showEmpty ? (
         <EmptyState
