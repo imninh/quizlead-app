@@ -1,0 +1,44 @@
+{
+  "regions": ["sin1"],
+  "rewrites": [
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
+      ]
+    }
+  ],
+  "functions": {
+    "api/generate-quiz.ts": { "maxDuration": 60 },
+    "api/ghost-run.ts": { "maxDuration": 60 },
+    "api/health.ts": { "maxDuration": 10 },
+    "api/quizzes.ts": { "maxDuration": 10 },
+    "api/quizzes/[id].ts": { "maxDuration": 10 },
+    "api/attempts/start.ts": { "maxDuration": 10 },
+    "api/scores.ts": { "maxDuration": 10 },
+    "api/leaderboard/[quizId].ts": { "maxDuration": 10 },
+    "api/leaderboard/[quizId]/[entryId].ts": { "maxDuration": 10 },
+    "api/admin/check.ts": { "maxDuration": 10 }
+  }
+}

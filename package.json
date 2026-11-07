@@ -1,0 +1,54 @@
+{
+  "name": "app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "engines": {
+    "node": "22.x || 24.x"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.test.json && tsc --noEmit -p tsconfig.node.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "smoke": "playwright test tests/e2e/smoke.spec.ts",
+    "features": "playwright test tests/e2e/features.spec.ts --project=mobile-375 --project=desktop-1366",
+    "matrix": "playwright test tests/e2e/matrix.spec.ts --project=desktop-1366 --workers=3",
+    "check:api": "node scripts/check-api.mjs",
+    "smoke:live": "playwright test -c playwright.live.config.ts"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "canvas-confetti": "^1.9.4",
+    "lucide-react": "^1.61.0",
+    "motion": "^14.9.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.4",
+    "tailwindcss": "^4.3.3",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.64.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/jsdom": "^30.0.0",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "jsdom": "^29.1.1",
+    "oxlint": "^1.88.0",
+    "sharp": "^0.35.5",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
+  }
+}
