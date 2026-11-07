@@ -11,6 +11,8 @@ import { StickerCard } from '../../components/StickerCard'
 import { EmptyState } from '../../components/EmptyState'
 import { BrushStroke } from '../../components/BrushStroke'
 import { MSG } from '../../domain/messages'
+import { canPlayOnline } from '../../domain/publish'
+import { getOnlineHealth } from '../../services/onlineClient'
 import { Gift, ListChecks, Timer, type LucideIcon } from 'lucide-react'
 
 /** Ô thông tin kiểu sticker: icon nét đậm + giá trị to + nhãn, chấm halftone ở góc. */
@@ -78,6 +80,12 @@ export default function HomePage() {
     )
   }
 
+  // Quiz đã có trên máy chủ thì chơi qua link online: điểm vừa lưu trên máy vừa lên bảng chung.
+  const startPlay = async () => {
+    const online = canPlayOnline(quizData) && (await getOnlineHealth())
+    navigate(online ? `/q/${quizData.id}` : `/play/${quizData.id}`)
+  }
+
   return (
     <div className="home-hero relative mx-auto max-w-6xl overflow-hidden lg:flex lg:min-h-[calc(100svh-7rem)] lg:max-w-none lg:flex-col lg:justify-center lg:py-6">
       <PosterBackdrop word="QUIZ!" align="right" />
@@ -120,7 +128,7 @@ export default function HomePage() {
           <p className="text-sm font-medium">Đúng càng nhanh, điểm càng cao: tối đa 1.000 điểm/câu.</p>
 
           <div className="flex flex-col items-stretch justify-center gap-3 sm:flex-row md:justify-start">
-            <Button className="min-h-[56px] text-lg" onClick={() => navigate(`/play/${quizData.id}`)}>
+            <Button className="min-h-[56px] text-lg" onClick={() => void startPlay()}>
               Bắt đầu chơi
             </Button>
             <Link to={`/leaderboard/${quizData.id}`} className="inline-flex min-h-[44px] items-center self-center font-semibold underline decoration-2 underline-offset-4">

@@ -216,7 +216,7 @@ export default function ResultPage() {
   )
 
   return (
-    <div className="relative mx-auto max-w-6xl overflow-hidden lg:flex lg:min-h-[calc(100svh-7rem)] lg:max-w-none lg:flex-col lg:justify-center">
+    <div className="relative mx-auto max-w-6xl overflow-hidden lg:flex lg:max-w-none lg:flex-col lg:pt-6">
       <PosterBackdrop word={posterWord} align="right" showTapes={false} />
       <Doodle kind="star" size={48} color="var(--color-sun)" className="absolute -left-2 top-2 hidden opacity-70 lg:block" />
       <Doodle kind="swirl" size={70} color="var(--color-bubble)" className="absolute -right-2 bottom-16 hidden opacity-50 lg:block" />
@@ -332,7 +332,7 @@ export default function ResultPage() {
 
         <div className="result-wide__form space-y-4">
           {leadId || existingLead ? (
-            <StickerCard tone="mint" className="space-y-3 text-center">
+            <StickerCard tone="sky" className="space-y-3 text-center lg:flex lg:h-full lg:flex-col lg:justify-center">
               <div className="flex justify-center">
                 <HandNote rotate="3deg">{MSG.handThanks}</HandNote>
               </div>

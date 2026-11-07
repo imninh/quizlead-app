@@ -12,6 +12,7 @@ import { Doodle } from '../../components/Doodle'
 import { EmptyState } from '../../components/EmptyState'
 import { BrushStroke } from '../../components/BrushStroke'
 import { MSG } from '../../domain/messages'
+import { canPlayOnline } from '../../domain/publish'
 import { OnlineError, fetchOnlineLeaderboard, fetchPublishedQuiz, loadOnlineEntry, loadOnlineEntryId, mergeOnlineEntries, type OnlineEntry } from '../../services/onlineClient'
 import type { Lead, Quiz } from '../../domain/schemas'
 
@@ -143,7 +144,10 @@ export default function LeaderboardPage() {
   const localRanked = ranked
   const showEmpty = activeTab === 'online' ? onlineRanked.length === 0 : localRanked.length === 0
   // Chỉ dẫn sang link online khi bảng chung tải được; còn lại chơi bằng quiz trên máy.
-  const playHref = hasOnlineBoard && onlineIssue === null && activeTab === 'online' ? `/q/${quizId}` : `/play/${quizId}`
+  const playHref =
+    hasOnlineBoard && onlineIssue === null && (activeTab === 'online' || (quiz !== null && canPlayOnline(quiz)))
+      ? `/q/${quizId}`
+      : `/play/${quizId}`
 
   return (
     <div className="relative mx-auto max-w-5xl">
