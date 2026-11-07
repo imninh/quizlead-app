@@ -97,7 +97,10 @@ test('live seed quiz is served by the server', async ({ request }) => {
 test('live leaderboard response is cacheable', async ({ request }) => {
   const response = await request.get('/api/leaderboard/seed-digital-marketing')
   expect(response.status()).toBe(200)
-  expect(response.headers()['cache-control']).toContain('s-maxage')
+  // Vercel dùng s-maxage ở edge rồi bỏ khỏi header gửi trình duyệt; dấu hiệu cache là x-vercel-cache.
+  const headers = response.headers()
+  const edgeCached = (headers['cache-control'] ?? '').includes('s-maxage') || 'x-vercel-cache' in headers
+  expect(edgeCached).toBe(true)
 })
 
 test('live AI generate quiz works once', async ({ request }, testInfo) => {

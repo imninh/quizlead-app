@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.node.json",
+  "compilerOptions": {
+    "composite": false,
+    "allowImportingTsExtensions": false,
+    "rootDir": "..",
+    "types": ["node"]
+  },
+  "include": ["."]
+}
