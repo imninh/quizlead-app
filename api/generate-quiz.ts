@@ -1,4 +1,4 @@
-import { handleGenerateQuizRequest, secureRandom } from '../server/generateQuiz.ts'
+import { handleGenerateQuizRequest, secureRandom } from '../server/generateQuiz.js'
 
 export async function POST(request: Request): Promise<Response> {
   return handleGenerateQuizRequest(request, {

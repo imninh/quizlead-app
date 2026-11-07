@@ -1,9 +1,9 @@
 import { z } from 'zod'
-import { AiQuizRequestSchema, type Question } from '../src/domain/schemas.ts'
-import { MSG } from '../src/domain/messages.ts'
-import { checkAiQuota } from './aiQuota.ts'
-import { getOnlineConfig, type OnlineStore } from './online/store.ts'
-import { DIFFICULTY_LABELS, SYSTEM_PROMPT, buildUserPrompt } from './prompt.ts'
+import { AiQuizRequestSchema, type Question } from '../src/domain/schemas.js'
+import { MSG } from '../src/domain/messages.js'
+import { checkAiQuota } from './aiQuota.js'
+import { getOnlineConfig, type OnlineStore } from './online/store.js'
+import { DIFFICULTY_LABELS, SYSTEM_PROMPT, buildUserPrompt } from './prompt.js'
 
 // API kiểu OpenAI. Đổi nhà cung cấp chỉ cần đổi AI_BASE_URL + key.
 export const DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1'

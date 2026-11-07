@@ -1,4 +1,4 @@
-import { QUESTION_TIME_MS, MAX_POINTS_PER_QUESTION } from './constants.ts'
+import { QUESTION_TIME_MS, MAX_POINTS_PER_QUESTION } from './constants.js'
 
 export function computePoints(isCorrect: boolean, elapsedMs: number): number {
   if (!isCorrect) return 0

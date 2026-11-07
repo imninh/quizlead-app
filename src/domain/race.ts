@@ -1,6 +1,6 @@
-import type { AnswerRecord, AiGhost, OpponentKind, Quiz, RaceResult } from './schemas.ts'
-import { MAX_POINTS_PER_QUESTION } from './constants.ts'
-import { computePoints } from './scoring.ts'
+import type { AnswerRecord, AiGhost, OpponentKind, Quiz, RaceResult } from './schemas.js'
+import { MAX_POINTS_PER_QUESTION } from './constants.js'
+import { computePoints } from './scoring.js'
 
 export type RaceOpponent = {
   kind: OpponentKind

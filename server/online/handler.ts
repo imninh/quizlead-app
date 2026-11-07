@@ -7,13 +7,13 @@ import {
   QuizSchema,
   RaceResultSchema,
   type Quiz,
-} from '../../src/domain/schemas.ts'
-import { computePoints } from '../../src/domain/scoring.ts'
-import { raceResult as compareRace } from '../../src/domain/race.ts'
-import { getNameError, getPhoneError, normalizeName, normalizePhone } from '../../src/domain/validation.ts'
-import { SEED_QUIZ } from '../../src/domain/seed.ts'
-import { getOnlineConfig, type OnlineConfig, type OnlineStore } from './store.ts'
-import { createAttemptToken, maskPhone, phoneKey, safeEqual, verifyAttemptToken } from './crypto.ts'
+} from '../../src/domain/schemas.js'
+import { computePoints } from '../../src/domain/scoring.js'
+import { raceResult as compareRace } from '../../src/domain/race.js'
+import { getNameError, getPhoneError, normalizeName, normalizePhone } from '../../src/domain/validation.js'
+import { SEED_QUIZ } from '../../src/domain/seed.js'
+import { getOnlineConfig, type OnlineConfig, type OnlineStore } from './store.js'
+import { createAttemptToken, maskPhone, phoneKey, safeEqual, verifyAttemptToken } from './crypto.js'
 
 const MAX_BODY_BYTES = 8192
 const PUBLISH_MAX_BODY_BYTES = 32768

@@ -1,4 +1,4 @@
-import type { Lead } from './schemas.ts'
+import type { Lead } from './schemas.js'
 
 export function rankLeads(leads: Lead[], quizId: string): Lead[] {
   return leads

@@ -1,4 +1,4 @@
-import { MSG } from './messages.ts'
+import { MSG } from './messages.js'
 
 export type QuestionErrors = {
   text?: string

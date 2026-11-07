@@ -1,5 +1,5 @@
-import type { Quiz, AiGhost } from './schemas.ts'
-import { createId } from './id.ts'
+import type { Quiz, AiGhost } from './schemas.js'
+import { createId } from './id.js'
 
 export const SEED_GHOST: AiGhost = {
   model: 'qwen/qwen3.5-flash-02-23',

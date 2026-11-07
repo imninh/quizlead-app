@@ -1,4 +1,4 @@
-import type { OnlineStore } from './online/store.ts'
+import type { OnlineStore } from './online/store.js'
 
 export type AiQuotaKind = 'generate' | 'ghost'
 

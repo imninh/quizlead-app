@@ -1,4 +1,4 @@
-import type { RaceResult } from './schemas.ts'
+import type { RaceResult } from './schemas.js'
 
 export function buildShareText(params: {
   score: number

@@ -1,7 +1,7 @@
-import { QUESTION_TIME_MS, REVEAL_MS, FEEDBACK_MS, QUESTIONS_PER_QUIZ } from './constants.ts'
-import { computePoints } from './scoring.ts'
-import type { Quiz, AnswerRecord } from './schemas.ts'
-import type { RaceOpponent } from './race.ts'
+import { QUESTION_TIME_MS, REVEAL_MS, FEEDBACK_MS, QUESTIONS_PER_QUIZ } from './constants.js'
+import { computePoints } from './scoring.js'
+import type { Quiz, AnswerRecord } from './schemas.js'
+import type { RaceOpponent } from './race.js'
 
 export type GameStatus = 'idle' | 'question' | 'feedback' | 'finished'
 

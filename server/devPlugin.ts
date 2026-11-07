@@ -1,8 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
-import { handleGenerateQuizRequest, secureRandom } from './generateQuiz.ts'
-import { handleGhostRunRequest } from './ghostRun.ts'
-import { handleOnlineRequest } from './online/handler.ts'
+import { handleGenerateQuizRequest, secureRandom } from './generateQuiz.js'
+import { handleGhostRunRequest } from './ghostRun.js'
+import { handleOnlineRequest } from './online/handler.js'
 
 const MAX_BODY_BYTES = 2048
 const MAX_GHOST_BODY_BYTES = 16384

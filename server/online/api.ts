@@ -1,4 +1,4 @@
-import { handleOnlineRequest } from './handler.ts'
+import { handleOnlineRequest } from './handler.js'
 
 export function handleOnlineApi(request: Request): Promise<Response> {
   const path = new URL(request.url).pathname.replace(/^\/api/, '')

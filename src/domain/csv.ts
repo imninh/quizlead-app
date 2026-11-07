@@ -1,4 +1,4 @@
-import type { Lead } from './schemas.ts'
+import type { Lead } from './schemas.js'
 
 export function leadsToCsv(leads: Lead[], quizzesById: Map<string, { title: string }>): string {
   const header = ['Tên', 'SĐT', 'Quiz', 'Điểm', 'Số câu đúng', 'Thời gian (giây)', 'Ngày giờ']

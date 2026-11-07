@@ -4,11 +4,11 @@ import {
   providerFor,
   resolveApiKey,
   DEFAULT_BASE_URL,
-} from './generateQuiz.ts'
-import { checkAiQuota } from './aiQuota.ts'
-import { getOnlineConfig, type OnlineStore } from './online/store.ts'
-import { MSG } from '../src/domain/messages.ts'
-import { GHOST_SYSTEM_PROMPT, buildGhostPrompt } from './prompt.ts'
+} from './generateQuiz.js'
+import { checkAiQuota } from './aiQuota.js'
+import { getOnlineConfig, type OnlineStore } from './online/store.js'
+import { MSG } from '../src/domain/messages.js'
+import { GHOST_SYSTEM_PROMPT, buildGhostPrompt } from './prompt.js'
 
 const DEFAULT_GHOST_MODEL = 'qwen/qwen3.5-flash-02-23'
 const DEFAULT_QUESTION_TIMEOUT_MS = 30000
