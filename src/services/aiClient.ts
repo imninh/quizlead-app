@@ -118,7 +118,8 @@ export class HttpProvider implements AiProvider {
   constructor(
     fetchImpl: typeof fetch = (...args) => globalThis.fetch(...args),
     endpoint = '/api/generate-quiz',
-    timeoutMs = 25000,
+    // Soạn + tự soát mất ~10–20 giây; chừa dư cho lúc model chậm (máy chủ cắt ở 60 giây).
+    timeoutMs = 55000,
   ) {
     this.fetchImpl = fetchImpl
     this.endpoint = endpoint

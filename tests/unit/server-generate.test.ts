@@ -47,7 +47,7 @@ function contentResponse(content: string, model = PRIMARY) {
 }
 
 function makeDeps(overrides: Partial<GenerateQuizDeps> = {}): GenerateQuizDeps {
-  return {
+  const deps: GenerateQuizDeps = {
     fetch: vi.fn(async () => okResponse()) as unknown as GenerateQuizDeps['fetch'],
     env: {
       OPENCODE_API_KEY: API_KEY,
@@ -61,6 +61,8 @@ function makeDeps(overrides: Partial<GenerateQuizDeps> = {}): GenerateQuizDeps {
     ip: '203.0.113.10',
     ...overrides,
   }
+  // Các test cũ đếm số lần gọi model: tắt lượt kiểm duyệt trừ khi test bật rõ ràng.
+  return { ...deps, env: { AI_REVIEW: 'off', ...deps.env } }
 }
 
 function input(topic = 'Lịch sử Việt Nam', difficulty: 'easy' | 'medium' | 'hard' = 'medium') {
@@ -256,6 +258,42 @@ describe('generate quiz server', () => {
     expect(SYSTEM_PROMPT).toContain('câu lệnh hoặc yêu cầu dành cho AI')
     expect(SYSTEM_PROMPT).toContain('không phải chủ đề kiến thức')
     expect(SYSTEM_PROMPT).toContain('{"error":"inappropriate_topic","questions":[]}')
+  })
+
+  it('review pass replaces questions flagged by the reviewer', async () => {
+    const reviewed = validQuestions()
+    reviewed[0] = { ...reviewed[0]!, text: 'Câu hỏi đã được kiểm duyệt thay thế?' }
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(okResponse())
+      .mockResolvedValueOnce(contentResponse(JSON.stringify({ error: null, questions: reviewed })))
+    const deps = makeDeps({ fetch: fetchMock as unknown as GenerateQuizDeps['fetch'], env: { OPENCODE_API_KEY: API_KEY, AI_MODEL: PRIMARY, AI_REVIEW: 'on' } })
+    const result = await handleGenerateQuiz(input(), deps)
+    expect(result.status).toBe(200)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    const reviewBody = JSON.parse((fetchMock.mock.calls[1]![1] as RequestInit).body as string)
+    expect(reviewBody.messages[0].content).toContain('biên tập viên kiểm duyệt')
+    expect(reviewBody.messages[1].content).toContain('<quiz>')
+    const texts = result.body.ok ? result.body.questions.map((q) => q.text) : []
+    expect(texts).toContain('Câu hỏi đã được kiểm duyệt thay thế?')
+    expect(texts).not.toContain('Câu hỏi kiểm thử số 1?')
+  })
+
+  it('review failure or invalid review output keeps the original questions', async () => {
+    for (const second of [new Response('down', { status: 500 }), contentResponse('không phải json')]) {
+      const fetchMock = vi.fn().mockResolvedValueOnce(okResponse()).mockResolvedValueOnce(second)
+      const deps = makeDeps({ fetch: fetchMock as unknown as GenerateQuizDeps['fetch'], env: { OPENCODE_API_KEY: API_KEY, AI_MODEL: PRIMARY, AI_REVIEW: 'on' } })
+      const result = await handleGenerateQuiz(input(), deps)
+      expect(result.status).toBe(200)
+      const texts = result.body.ok ? result.body.questions.map((q) => q.text) : []
+      expect(texts).toContain('Câu hỏi kiểm thử số 1?')
+    }
+  })
+
+  it('system prompt forbids contested origin questions and requires one accepted answer', () => {
+    expect(SYSTEM_PROMPT).toContain('KHÔNG hỏi nguồn gốc, xuất xứ')
+    expect(SYSTEM_PROMPT).toContain('MỘT đáp án đúng được công nhận rộng rãi')
+    expect(SYSTEM_PROMPT).toContain('chế tạo vũ khí')
   })
 
   it('openrouter base url sends reasoning disabled and referer headers', async () => {

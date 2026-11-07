@@ -3,12 +3,13 @@ import { AiQuizRequestSchema, type Question } from '../src/domain/schemas.js'
 import { MSG } from '../src/domain/messages.js'
 import { checkAiQuota } from './aiQuota.js'
 import { getOnlineConfig, type OnlineStore } from './online/store.js'
-import { DIFFICULTY_LABELS, SYSTEM_PROMPT, buildUserPrompt } from './prompt.js'
+import { DIFFICULTY_LABELS, REVIEW_SYSTEM_PROMPT, SYSTEM_PROMPT, buildReviewPrompt, buildUserPrompt } from './prompt.js'
 
 // API kiểu OpenAI. Đổi nhà cung cấp chỉ cần đổi AI_BASE_URL + key.
 export const DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1'
-export const DEFAULT_MODEL = 'deepseek/deepseek-v4.1-flash'
+export const DEFAULT_MODEL = 'anthropic/claude-haiku-5.5'
 const DEFAULT_TIMEOUT_MS = 20000
+const REVIEW_TIMEOUT_MS = 25000
 const MAX_BODY_BYTES = 2048
 const RATE_LIMIT_WINDOW_MS = 60000
 
@@ -92,6 +93,7 @@ const ModelQuestionSchema = z.object({
   explanation: z.string().trim().min(1).max(200),
 })
 const ModelQuizSchema = z.object({ questions: z.array(ModelQuestionSchema).length(5) })
+type ModelQuestion = z.infer<typeof ModelQuestionSchema>
 // Gốc luôn là 1 object: nhiều provider không nhận anyOf ở gốc khi bật strict.
 // Model trả `error: null` + 5 câu, hoặc `error: "inappropriate_topic"` + mảng rỗng.
 const ModelResponseSchema = z.object({
@@ -377,16 +379,17 @@ export async function handleGenerateQuiz(body: unknown, deps: GenerateQuizDeps):
     return headers
   }
 
-  const buildBody = (currentModel: string): Record<string, unknown> => {
+  const buildBody = (currentModel: string, bodyMessages = messages): Record<string, unknown> => {
     const body: Record<string, unknown> = {
       model: currentModel,
-      messages,
+      messages: bodyMessages,
       response_format: {
         type: 'json_schema',
         json_schema: { name: 'quiz', strict: true, schema: QUIZ_JSON_SCHEMA },
       },
       max_tokens: 3000,
-      temperature: 0.7,
+      // Thấp để câu hỏi kiến thức bám sự thật, ít "sáng tác".
+      temperature: 0.3,
     }
     // Tắt suy luận: eval cho thấy suy luận tốn ~1.600 token và làm câu trả lời bị cắt cụt.
     if (provider === 'openrouter') body.reasoning = { enabled: false }
@@ -395,6 +398,59 @@ export async function handleGenerateQuiz(body: unknown, deps: GenerateQuizDeps):
   }
 
   let lastError = ''
+
+  /**
+   * Lượt kiểm duyệt: AI soát lại 5 câu theo danh sách kiểm tra, thay câu sai/mơ hồ.
+   * An toàn khi lỗi: hỏng, chậm hay output sai định dạng thì giữ nguyên bản gốc (người tạo vẫn duyệt trước khi lưu).
+   */
+  const reviewQuestions = async (questions: ModelQuestion[]): Promise<ModelQuestion[]> => {
+    if (deps.env.AI_REVIEW?.trim().toLowerCase() === 'off') return questions
+    const controller = new AbortController()
+    let timer: ReturnType<typeof globalThis.setTimeout> | undefined
+    try {
+      const timeout = new Promise<never>((_, reject) => {
+        timer = globalThis.setTimeout(() => {
+          controller.abort()
+          reject(new Error('timeout'))
+        }, deps.timeoutMs ?? REVIEW_TIMEOUT_MS)
+      })
+      const reviewMessages: typeof messages = [
+        { role: 'system', content: REVIEW_SYSTEM_PROMPT },
+        {
+          role: 'user',
+          content: buildReviewPrompt(parsedInput.data.topic, DIFFICULTY_LABELS[parsedInput.data.difficulty], questions),
+        },
+      ]
+      // Soát cần "nghĩ" để bắt lỗi kiến thức: bật suy luận mức thấp (một số model bắt buộc), nới giới hạn token.
+      const reviewBody = buildBody(deps.env.AI_REVIEW_MODEL?.trim() || models[modelIndex]!, reviewMessages)
+      reviewBody.max_tokens = 8000
+      if (provider === 'openrouter') reviewBody.reasoning = { effort: 'low' }
+      const response = await Promise.race([
+        deps.fetch(chatUrl, {
+          method: 'POST',
+          headers: buildHeaders(),
+          body: JSON.stringify(reviewBody),
+          signal: controller.signal,
+        }),
+        timeout,
+      ])
+      if (!response.ok) return questions
+      const payload: unknown = await response.json()
+      const usage = getUsage(payload)
+      promptTokens += usage.prompt_tokens
+      completionTokens += usage.completion_tokens
+      const content = getMessageContent(payload)
+      const parsed = ModelResponseSchema.safeParse(content ? parseJsonContent(content) : null)
+      if (!parsed.success || parsed.data.error) return questions
+      const reviewed = ModelQuizSchema.safeParse({ questions: parsed.data.questions })
+      if (!reviewed.success || validateQuestions(reviewed.data)) return questions
+      return reviewed.data.questions
+    } catch {
+      return questions
+    } finally {
+      if (timer) globalThis.clearTimeout(timer)
+    }
+  }
 
   for (attempt = 1; attempt <= 2; attempt++) {
     const controller = new AbortController()
@@ -508,7 +564,7 @@ export async function handleGenerateQuiz(body: unknown, deps: GenerateQuizDeps):
         status: 200,
         body: {
           ok: true,
-          questions: shuffleQuestions(quiz.data.questions, deps.random),
+          questions: shuffleQuestions(await reviewQuestions(quiz.data.questions), deps.random),
           model,
           usage: { prompt_tokens: promptTokens, completion_tokens: completionTokens },
         },

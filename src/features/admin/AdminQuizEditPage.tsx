@@ -369,7 +369,7 @@ export default function AdminQuizEditPage() {
             <h2 className="font-display text-xl">AI gợi ý câu hỏi</h2>
             {aiUsed && aiMode === 'mock' ? <p className="text-xs text-ink/60">{MOCK_LABEL}</p> : null}
             {aiUsed && aiMode === 'real' && aiModel ? <p className="text-xs text-ink/60">Tạo bởi AI · {aiModel}</p> : null}
-            {!aiUsed ? <p className="text-xs text-ink/60">AI thật (OpenRouter · DeepSeek). Kết quả cần được kiểm tra trước khi lưu.</p> : null}
+            {!aiUsed ? <p className="text-xs text-ink/60">AI thật (OpenRouter · Claude Haiku). Kết quả cần được kiểm tra trước khi lưu.</p> : null}
             <TextField label="Chủ đề" value={aiTopic} onChange={(e) => setAiTopic(e.target.value)} />
             <div className="flex gap-2">
               {DIFFICULTIES.map((d) => (
@@ -389,7 +389,7 @@ export default function AdminQuizEditPage() {
             {aiLoading ? (
               <div className="flex items-center gap-3 rounded-[16px_20px_14px_22px] border-2 border-ink/15 bg-white/70 p-2">
                 <CharacterImage name="mi-ai-thinking" className="h-24 w-auto object-contain" width={200} height={200} sizes="96px" />
-                <p className="text-sm font-medium">Mi đang nghĩ câu hỏi…</p>
+                <p className="text-sm font-medium">Mi đang soạn và tự soát câu hỏi… (khoảng 15 giây)</p>
               </div>
             ) : null}
             {aiError ? (

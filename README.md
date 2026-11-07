@@ -9,11 +9,11 @@
 | Tên đội thi | Viber |
 | Bảng thi | Bảng A - Công nghệ |
 | Đề bài bốc thăm | Đề số 03 — Minigame quiz thu lead cho fanpage |
-| Demo online | `<URL Vercel>` |
+| Demo online | https://quizlead-app.vercel.app |
 | Video demo (≤ 02 phút) | `<URL>` |
 | Source code | https://github.com/imninh/quizlead-app |
-| Minh chứng dùng AI | `<link tài liệu minh chứng>` |
-| Bảng kiểm thử | Tóm tắt ở mục 11; bảng đầy đủ: `<link bảng kiểm thử>` |
+| Minh chứng dùng AI | [docs/minh-chung-ai.pdf](docs/minh-chung-ai.pdf) (1 trang + 5 ảnh) |
+| Bảng kiểm thử | Tóm tắt ở mục 11; bảng đầy đủ 33 ca: [docs/bang-kiem-thu.pdf](docs/bang-kiem-thu.pdf) |
 
 ## 2. Tính năng chính
 
@@ -43,15 +43,17 @@
 ## 4. Tích hợp AI
 
 - **Chế độ đang dùng:** API thật.
-  - Soạn quiz: `deepseek/deepseek-v4.1-flash` qua OpenRouter; model dự phòng `qwen/qwen3.5-flash-02-23`, `google/gemini-2.5-flash-lite`.
+  - Soạn quiz: `anthropic/claude-haiku-5.5` qua OpenRouter; model dự phòng `google/gemini-2.5-flash-lite`.
   - Đối thủ "Trùm" trên đường đua: `qwen/qwen3.5-flash-02-23` (khác model soạn quiz, để không "biết trước" đáp án).
   - Khi AI lỗi, người dùng được hỏi có muốn dùng bộ câu hỏi mẫu không; bộ mẫu luôn hiện nhãn *"Bản demo vòng loại - Dữ liệu mô phỏng AI"*.
 - **Mục đích:** gợi ý 5 câu trắc nghiệm theo chủ đề và độ khó; giải từng câu để làm đối thủ trên đường đua.
 - **Kiểm soát đầu ra:**
   - Đầu vào kiểm tra bằng zod ở cả client và server (chủ đề 3–100 ký tự, xoá ký tự điều khiển).
   - Bắt AI trả JSON theo schema; server kiểm lại bằng zod: đúng 5 câu, 4 đáp án không trùng, độ dài hợp lệ. Sai định dạng thì thử lại 1 lần rồi báo lỗi.
+  - **AI tự soát lại:** sau khi soạn, server gọi AI lần 2 với vai biên tập viên, kiểm từng câu theo danh sách (đáp án có chắc đúng, phương án sai có thể bị cãi, sai vùng miền, nguồn gốc gây tranh cãi, lời giải thích mâu thuẫn) và thay câu không đạt. Bước soát lỗi thì giữ bản gốc, người tạo vẫn duyệt.
+  - Prompt cấm câu hỏi nguồn gốc còn tranh cãi, so sánh dân tộc/quốc gia, chính trị, tôn giáo, lãnh thổ; yêu cầu mỗi câu chỉ có một đáp án được công nhận rộng rãi.
   - Server **trộn vị trí đáp án** (AI hay đặt đáp án đúng ở A).
-  - **Chống prompt injection:** chủ đề chỉ được coi là dữ liệu; chủ đề kiểu "bỏ qua hướng dẫn…" hoặc không phù hợp bị chặn với mã 422.
+  - **Chống prompt injection và chủ đề nguy hiểm:** chủ đề chỉ được coi là dữ liệu; chủ đề kiểu "bỏ qua hướng dẫn…", "cách chế tạo vũ khí", bạo lực, cờ bạc, 18+, chất cấm bị chặn với mã 422.
   - Câu hỏi AI tạo luôn hiện huy hiệu "AI gợi ý, hãy kiểm tra lại" và **không lưu tự động**: người tạo phải duyệt.
   - **Chống lạm dụng:** giới hạn theo IP mỗi phút + trần chung mỗi ngày (lưu trên Upstash, dùng chung mọi instance); hết lượt thì không gọi AI nữa.
 - **Bảo mật khoá API:** khoá chỉ nằm ở biến môi trường của Vercel Function; trình duyệt không bao giờ thấy khoá.
@@ -61,9 +63,9 @@ Biến môi trường (xem đủ trong `.env.example`):
 ```env
 AI_API_KEY=<khoá OpenRouter>
 AI_BASE_URL=https://openrouter.ai/api/v1
-AI_MODEL=deepseek/deepseek-v4.1-flash
+AI_MODEL=anthropic/claude-haiku-5.5
 AI_GHOST_MODEL=qwen/qwen3.5-flash-02-23
-AI_FALLBACK_MODELS=qwen/qwen3.5-flash-02-23,google/gemini-2.5-flash-lite
+AI_FALLBACK_MODELS=google/gemini-2.5-flash-lite
 AI_RATE_LIMIT_PER_MIN=5
 # Tuỳ chọn — xếp hạng online:
 UPSTASH_REDIS_REST_URL=<url>
@@ -107,8 +109,9 @@ quizlead-app/
 │   ├── features/     # home, play, result, leaderboard, admin
 │   └── components/   # UI dùng chung
 ├── public/assets/    # Ảnh nhân vật (WebP @1x/@2x/@3x)
-├── scripts/          # Xử lý ảnh, đánh giá AI, kiểm tra API
-├── tests/            # unit/ (Vitest), e2e/ (Playwright)
+├── scripts/          # check-api: kiểm tra API chạy được sau khi Vercel đóng gói
+├── tests/            # unit/ (Vitest), e2e/ (Playwright), live/ (kiểm tra trên link thật)
+├── docs/             # Minh chứng AI và bảng kiểm thử (PDF)
 ├── .env.example      # Mẫu biến môi trường, không chứa giá trị thật
 ├── vercel.json       # Region, thời gian chạy tối đa, header bảo mật
 └── README.md
