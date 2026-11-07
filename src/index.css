@@ -354,3 +354,25 @@ table {
 .passcode-input::-ms-clear {
   display: none;
 }
+
+/* Hộp hướng dẫn quản trị: bật ra như nhãn dán, từng bước rơi xuống lần lượt. */
+@keyframes guide-pop {
+  from { opacity: 0; scale: 0.92; rotate: -1.5deg; }
+  to { opacity: 1; scale: 1; rotate: 0deg; }
+}
+@keyframes guide-drop {
+  from { opacity: 0; translate: 0 -14px; }
+  to { opacity: 1; translate: 0 0; }
+}
+.guide-pop {
+  animation: guide-pop 260ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.guide-step {
+  animation: guide-drop 320ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .guide-pop,
+  .guide-step {
+    animation: none;
+  }
+}
