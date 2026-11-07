@@ -89,7 +89,7 @@ describe('online ui', () => {
     await user.click(screen.getByRole('checkbox'))
     await user.click(screen.getByRole('button', { name: 'Gửi thông tin' }))
 
-    expect(await screen.findByText('Chưa gửi được lên bảng xếp hạng chung.')).toBeInTheDocument()
+    expect(await screen.findByText(/Chưa gửi được lên bảng xếp hạng chung/)).toBeInTheDocument()
     const leads = createStorageRepo().getLeads()
     expect(leads.ok && leads.data).toHaveLength(1)
     expect(leads.ok && leads.data[0]!.name).toBe('Nguyễn Văn A')

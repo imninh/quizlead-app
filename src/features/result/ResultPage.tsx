@@ -23,7 +23,7 @@ import { isInAppBrowser } from '../../domain/browser'
 import { copyText } from '../../services/clipboard'
 import { createId } from '../../domain/id'
 import { loadPendingResult, loadOnlineAttemptToken, clearOnlineAttemptToken } from '../../services/session'
-import { saveOnlineEntryId, saveOnlineEntry, scorePayload, submitOnlineScore } from '../../services/onlineClient'
+import { OnlineError, onlineFailureFor, ONLINE_FAILURE_RETRY, saveOnlineEntryId, saveOnlineEntry, scorePayload, submitOnlineScore, type OnlineFailure } from '../../services/onlineClient'
 import { MSG } from '../../domain/messages'
 import type { Lead } from '../../domain/schemas'
 
@@ -63,6 +63,7 @@ export default function ResultPage() {
   const [fallbackText, setFallbackText] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [onlineStatus, setOnlineStatus] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle')
+  const [onlineFailure, setOnlineFailure] = useState<OnlineFailure>(ONLINE_FAILURE_RETRY)
   const [lastLead, setLastLead] = useState<Lead | null>(null)
   const fallbackRef = useRef<HTMLTextAreaElement>(null)
   const savingRef = useRef(false)
@@ -136,6 +137,7 @@ export default function ResultPage() {
   const sendOnline = async (lead: Lead) => {
     const token = loadOnlineAttemptToken()
     if (!token) {
+      setOnlineFailure(onlineFailureFor('INVALID_TOKEN'))
       setOnlineStatus('failed')
       return
     }
@@ -162,7 +164,8 @@ export default function ResultPage() {
       saveOnlineEntry(result.entry)
       clearOnlineAttemptToken()
       setOnlineStatus('sent')
-    } catch {
+    } catch (error) {
+      setOnlineFailure(onlineFailureFor(error instanceof OnlineError ? error.code : 'NETWORK'))
       setOnlineStatus('failed')
     }
   }
@@ -340,15 +343,17 @@ export default function ResultPage() {
                   {onlineStatus === 'sent' ? <p>Đã gửi lên bảng xếp hạng chung.</p> : null}
                   {onlineStatus === 'failed' ? (
                     <>
-                      <p>Chưa gửi được lên bảng xếp hạng chung.</p>
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          if (lastLead) void sendOnline(lastLead)
-                        }}
-                      >
-                        Gửi lại
-                      </Button>
+                      <p>{onlineFailure.message}</p>
+                      {onlineFailure.canRetry ? (
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            if (lastLead) void sendOnline(lastLead)
+                          }}
+                        >
+                          Gửi lại
+                        </Button>
+                      ) : null}
                     </>
                   ) : null}
                 </div>
@@ -370,7 +375,6 @@ export default function ResultPage() {
                 {shareButton}
                 {facebookButton}
               </div>
-              <CharacterImage name="mi-skate-wave" className="mx-auto h-32 w-auto object-contain" width={240} height={240} sizes="128px" />
             </StickerCard>
           ) : (
             <StickerCard tone="paper" className="space-y-3">

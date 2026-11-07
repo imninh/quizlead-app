@@ -9,7 +9,8 @@ type StickerCardProps = {
 const toneClass: Record<NonNullable<StickerCardProps['tone']>, string> = {
   paper: 'bg-paper/95',
   white: 'bg-white/95',
-  mint: 'bg-mint/20',
+  // Pha sẵn với nền giấy để thẻ đục: không lộ hình nền poster phía sau chữ.
+  mint: 'bg-[color-mix(in_srgb,var(--color-mint)_20%,var(--color-paper))]',
   alert: 'bg-alert/10',
   cobalt: 'bg-cobalt/10',
   sun: 'bg-sun/30',

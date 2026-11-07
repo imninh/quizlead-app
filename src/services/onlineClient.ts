@@ -243,3 +243,33 @@ export function loadOnlineEntryId(): string | null {
     return null
   }
 }
+
+export type OnlineFailure = { message: string; canRetry: boolean }
+
+export const ONLINE_FAILURE_RETRY: OnlineFailure = {
+  message: 'Chưa gửi được lên bảng xếp hạng chung. Điểm vẫn được lưu trên máy này.',
+  canRetry: true,
+}
+
+/** Lý do điểm không lên bảng chung; chỉ cho "Gửi lại" khi lỗi có thể qua khỏi (mạng, máy chủ bận). */
+export function onlineFailureFor(code: string): OnlineFailure {
+  switch (code) {
+    case 'SUSPICIOUS':
+      return {
+        message: 'Bạn trả lời nhanh bất thường nên điểm không được đưa lên bảng chung (chống gian lận). Điểm vẫn được lưu trên máy này.',
+        canRetry: false,
+      }
+    case 'INVALID_TOKEN':
+      return { message: 'Lượt chơi đã quá 15 phút nên không gửi lên bảng chung được. Hãy chơi lượt mới.', canRetry: false }
+    case 'TOKEN_USED':
+      return { message: 'Lượt chơi này đã được gửi lên bảng chung rồi.', canRetry: false }
+    case 'NOT_FOUND':
+      return { message: 'Quiz đã được cập nhật hoặc gỡ khỏi bảng chung. Điểm vẫn được lưu trên máy này.', canRetry: false }
+    case 'INVALID_NAME':
+    case 'INVALID_PHONE':
+    case 'INVALID_INPUT':
+      return { message: 'Thông tin không hợp lệ nên không gửi lên bảng chung được.', canRetry: false }
+    default:
+      return ONLINE_FAILURE_RETRY
+  }
+}
